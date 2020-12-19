@@ -68,6 +68,7 @@ void instr_jp(u16 instr) {
 
 void instr_call(u16 instr) {
     state.sp++;
+    INC_PC;
     state.stack[state.sp] = state.pc;
     state.pc = INSTR_NNN;
 }
@@ -124,7 +125,10 @@ void instr_xor_xy(u16 instr) {
 }
 
 void instr_add_xy(u16 instr) {
-    logfatal("instr_add_xy");
+    u16 result = Vx + Vy;
+    VF = result > 0xFF ? 1 : 0;
+    Vx = result & 0xFF;
+    INC_PC;
 }
 
 void instr_sub_xy(u16 instr) {
@@ -165,7 +169,8 @@ void instr_jp_v0_ofs(u16 instr) {
 }
 
 void instr_rnd(u16 instr) {
-    logfatal("instr_rnd");
+    Vx = rand() & INSTR_KK;
+    INC_PC;
 }
 
 void instr_drw(u16 instr) {
@@ -195,7 +200,8 @@ void instr_sknp(u16 instr) {
 }
 
 void instr_ld_x_dt(u16 instr) {
-    logfatal("instr_ld_x_dt");
+    Vx = state.delay;
+    INC_PC;
 }
 
 void instr_ld_x_k(u16 instr) {
@@ -203,7 +209,8 @@ void instr_ld_x_k(u16 instr) {
 }
 
 void instr_ld_dt_x(u16 instr) {
-    logfatal("instr_ld_dt_x");
+    state.delay = Vx;
+    INC_PC;
 }
 
 void instr_ld_st_x(u16 instr) {
@@ -328,6 +335,9 @@ void chip8_run() {
         for (int i = 0; i < INSTRUCTIONS_PER_FRAME; i++) {
             u16 instr = read_u16(state.pc);
             instr_lut[instr](instr);
+        }
+        if (state.delay > 0) {
+            state.delay--;
         }
         on_frame_end(&state.screen, &state.screen_updated);
     }
