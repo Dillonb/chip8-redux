@@ -58,7 +58,7 @@ void handle_event(SDL_Event* event) {
     }
 }
 
-void on_frame_end(bool (*screen)[SCREEN_Y][SCREEN_X], bool* should_update_texture) {
+void on_frame_end(u64 (*screen)[SCREEN_Y], bool* should_update_texture) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         handle_event(&event);
@@ -67,8 +67,10 @@ void on_frame_end(bool (*screen)[SCREEN_Y][SCREEN_X], bool* should_update_textur
     if (*should_update_texture) {
         color_t screen_data[SCREEN_Y][SCREEN_X];
         for (int y = 0; y < SCREEN_Y; y++) {
+            u64 row = (*screen)[y];
             for (int x = 0; x < SCREEN_X; x++) {
-                screen_data[y][x] = (*screen)[y][x] ? ON : BLANK;
+                screen_data[y][x] = (row & ((u64)1 << 63)) ? ON : BLANK;
+                row <<= 1;
             }
         }
         SDL_UpdateTexture(buffer, NULL, screen_data, SCREEN_X * sizeof(color_t));

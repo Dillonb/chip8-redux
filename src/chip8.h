@@ -12,6 +12,7 @@
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
+typedef uint64_t u64;
 
 typedef struct chip8 {
     u8 mem[0x1000];
@@ -24,7 +25,7 @@ typedef struct chip8 {
     u8 V[16];
     u16 stack[16];
 
-    bool screen[SCREEN_Y][SCREEN_X];
+    u64 screen[SCREEN_Y];
     bool screen_updated;
 } chip8_t;
 

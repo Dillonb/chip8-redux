@@ -21,6 +21,13 @@ chip8_instr_t instr_lut[0x10000];
 #define INSTR_N ((instr) & 0x000F)
 #define INSTR_KK ((instr) & 0x00FF)
 
+INLINE u64 ror64(u64 value, unsigned int amount) {
+    const unsigned int mask = (8 * sizeof(value) - 1);
+#ifdef CHPIP8_DEBUG_MODE
+    unimplemented(amount > mask, "ror64 by >= 64");
+#endif
+    return (value >> amount) | (value << ((-amount) & mask));
+}
 
 INLINE u16 read_u16(u16 addr) {
     u16 value;
@@ -34,28 +41,6 @@ INLINE u8 read_u8(u16 addr) {
 
 INLINE void write_u8(u16 addr, u8 value) {
     state.mem[addr] = value;
-}
-
-void show_frame() {
-    for (int i = 0; i < SCREEN_X + 2; i++) {
-        printf("-");
-    }
-    printf("\n");
-    for (int y = 0; y < SCREEN_Y; y++) {
-        printf("|");
-        for (int x = 0; x < SCREEN_X; x++) {
-            if (state.screen[y][x]) {
-                printf("█");
-            } else {
-                printf(" ");
-            }
-        }
-        printf("|\n");
-    }
-    for (int i = 0; i < SCREEN_X + 2; i++) {
-        printf("-");
-    }
-    printf("\n");
 }
 
 void instr_cls(u16 instr) {
@@ -189,19 +174,12 @@ void instr_drw(u16 instr) {
     state.screen_updated = true;
 
     for (int yofs = 0; yofs < INSTR_N; yofs++) {
-        u8 row = read_u8(state.index + yofs);
-        for (int xofs = 7; xofs >= 0; xofs--) {
-            bool* pixel = &state.screen[(Vy + yofs) % SCREEN_Y][(Vx + xofs) % SCREEN_X];
+        u64 row = (u64)read_u8(state.index + yofs) << 56;
+        row = ror64(row, Vx);
 
-            bool newpixel = (row & 1) ^*pixel;
-            row >>= 1;
-
-            if (*pixel && !newpixel) {
-                collision = true;
-            }
-
-            *pixel = newpixel;
-        }
+        u64* screen_row = &state.screen[Vy + yofs];
+        collision = (*screen_row & row) > 0;
+        *screen_row ^= row;
     }
 
     VF = collision ? 1 : 0;

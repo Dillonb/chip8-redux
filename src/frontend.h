@@ -16,6 +16,6 @@ typedef union color {
 extern bool should_quit;
 
 void frontend_init();
-void on_frame_end(bool (*screen)[SCREEN_Y][SCREEN_X], bool* should_update_texture);
+void on_frame_end(u64 (*screen)[SCREEN_Y], bool* should_update_texture);
 
 #endif //CHIP8_FRONTEND_H
