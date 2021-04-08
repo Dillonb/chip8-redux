@@ -183,7 +183,7 @@ void instr_drw(u16 instr) {
         row = ror64(row, Vx);
 
         u64* screen_row = &state.screen[Vy + yofs];
-        collision = (*screen_row & row) > 0;
+        collision |= (*screen_row & row) > 0;
         *screen_row ^= row;
     }
 
