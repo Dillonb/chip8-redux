@@ -1,17 +1,10 @@
 #include <SDL.h>
-#ifdef CHIP8_GPU_RENDER
-#define GLAD_GL_IMPLEMENTATION
-#include <glad/gl.h>
-#endif
 #include "frontend.h"
 #include "log.h"
 
 #define SCREEN_SCALE 20
 
 static SDL_Window* window = NULL;
-#ifdef CHIP8_GPU_RENDER
-static SDL_GLContext gl_context;
-#endif
 static SDL_Renderer* renderer = NULL;
 static SDL_Texture* buffer = NULL;
 
@@ -39,32 +32,7 @@ void frontend_init() {
                               SCREEN_X * SCREEN_SCALE,
                               SCREEN_Y * SCREEN_SCALE,
                               SDL_WINDOW_SHOWN
-#ifdef CHIP8_GPU_RENDER
-                              | SDL_WINDOW_OPENGL
-#endif
                               );
-
-#ifdef CHIP8_GPU_RENDER
-    gl_context = SDL_GL_CreateContext(window);
-
-    if (gl_context == NULL) {
-        logfatal("SDL couldn't create OpenGL context! %s", SDL_GetError());
-    }
-
-    int gl_version = gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress);
-
-    if (gl_version == 0) {
-        logfatal("Failed to initialize Glad context");
-    }
-
-    printf("OpenGL initialized.\n");
-    printf("Vendor:   %s\n", glGetString(GL_VENDOR));
-    printf("Renderer: %s\n", glGetString(GL_RENDERER));
-    printf("Version:  %s\n", glGetString(GL_VERSION));
-
-    glViewport(0, 0, SCREEN_X * SCREEN_SCALE, SCREEN_Y * SCREEN_SCALE);
-    glClearColor(0.0f, 0.5f, 1.0f, 0.0f);
-#endif
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
